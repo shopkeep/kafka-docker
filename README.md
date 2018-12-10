@@ -3,7 +3,7 @@ kafka-docker
 
 [![Docker Automated Build](https://img.shields.io/docker/automated/paddycarey/kafka.svg)](https://hub.docker.com/r/paddycarey/kafka/)
 
-This repository provides a Dockerised Kafka instance (based on Confluent Platform 3.0.1/Scala 2.11) for development and testing use.
+This repository provides a Dockerised Kafka instance (based on Confluent Platform 3.0.1/Scala 2.11) for development and testing use.  This repository supports Kafka 2.0.1 which is a fork from this [repo](https://github.com/paddycarey/kafka-docker/).
 
 **NOTE:** This image is _NOT_ intended for use in production. Horrible things will probably happen if you attempt to do so.
 
@@ -16,13 +16,13 @@ Running Zookeeper and Kafka and configuring them to work together is a pain. Thi
 By default Kafka will be accessible on `localhost:9092`, `localhost:9093` and `localhost:9193` so long as the port is exposed at runtime:
 
 ```bash
-$ docker run -ti -p 9092:9092 -p 9093:9093 -p 9193:9193 paddycarey/kafka
+$ docker run -ti -p 9092:9092 -p 9093:9093 -p 9193:9193 shopkeep/kafka
 ```
 
 Kafka comes with a command line client that will take input from a file or from standard input and send it out as messages to the Kafka cluster. By default, each line will be sent as a separate message. You can use this client to test that Kafka is working. Run the producer and then type a few messages into the console to send to the server:
 
 ```bash
-$ kafka-console-producer.sh --broker-list localhost:9092 --topic "test"
+$ kafka-console-producer --broker-list localhost:9092 --topic "test"
 This is a message
 This is another message
 ```
@@ -30,7 +30,7 @@ This is another message
 Kafka also has a command line consumer that will dump out messages to standard output.
 
 ```bash
-$ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic "test" --from-beginning
+$ kafka-console-consumer --bootstrap-server localhost:9092 --topic "test" --from-beginning
 This is a message
 This is another message
 ```
@@ -42,14 +42,14 @@ If you have each of the above commands running in a different terminal then you 
 This image is configured so that it can be accessed on `localhost:9092` for a PLAIN connection or `localhost:9093` for a SSL connection or `localhost:9193` for SSL + SASL. If you need to access Kafka using a different hostname you can set the `KAFKA_ADVERTISED_HOST` environment variable.
 
 ```bash
-$ docker run -ti -e "KAFKA_ADVERTISED_HOST=somehostname" -p 9092:9092 -p 9093:9093 -p 9193:9193 paddycarey/kafka
+$ docker run -ti -e "KAFKA_ADVERTISED_HOST=somehostname" -p 9092:9092 -p 9093:9093 -p 9193:9193 shopkeep/kafka
 ```
 
 Or if using Docker compose, your `docker-compose.yml` might look something like:
 
 ```yaml
 kafka:
-    image: paddycarey/kafka # or whatever your built
+    image: shopkeep/kafka # or whatever your built
     ports:
         - "9092:9092"
         - "9093:9093"
@@ -64,20 +64,24 @@ consumer:
     command: "python -u consumer.py"
 ```
 
+If your KAFKA_ADVERTISED_HOST is anything other than 'kafka', you will need to update the value in Dockefile from `CN=kafka` to `CN=somehostname`.
+
 ## Persistence
 
 This image stores log data in `/var/lib/kafka`. You can use a Docker volume to persist this directory beyond the lifetime of a single container.
 
 ```bash
-$ docker run -ti -v `pwd`/.data/:/var/lib/kafka -p 9092:9092 -p 9093:9093 -p 9193:9193 paddycarey/kafka
+$ docker run -ti -v `pwd`/.data/:/var/lib/kafka -p 9092:9092 -p 9093:9093 -p 9193:9193 shopkeep/kafka
 ```
+
+You should clean out `.data` directory regularly so that the existing data in the message queue would not interfere with your testing.
 
 ## Building the image
 
 To build the Docker image:
 
 ```bash
-$ docker build -t paddycarey/kafka .
+$ docker build -t shopkeep/kafka .
 ```
 
 Note: Advanced users can modify the configuration files in `config/kafka/` if necessary to change the behaviour of Kafka or Zookeeper.
