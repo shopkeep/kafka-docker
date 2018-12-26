@@ -1,15 +1,14 @@
 FROM ubuntu:16.04
-MAINTAINER Paddy Carey <paddy@wackwack.co.uk>
 
 # install build and runtime dependencies
 RUN apt-get update && apt-get install -y software-properties-common \
-                                         supervisor wget zookeeper
+                                         supervisor wget default-jre apt-transport-https
 
 # install kafka using .deb packages provided by Confluent
-RUN wget -qO - http://packages.confluent.io/deb/3.0/archive.key | apt-key add -
-RUN add-apt-repository "deb [arch=amd64] http://packages.confluent.io/deb/3.0 stable main"
+RUN wget -qO - https://packages.confluent.io/deb/5.0/archive.key | apt-key add -
+RUN add-apt-repository "deb [arch=amd64] https://packages.confluent.io/deb/5.0 stable main"
 RUN apt-get update && apt-get install -y confluent-platform-2.11
-RUN keytool -genkey -keyalg RSA -alias selfsigned -keystore /etc/kafka/kafka.jks -storepass password -keypass password -validity 360 -keysize 2048 -dname "CN=localhost,OU=foo,O=foo,L=bar,ST=bar,C=IT"
+RUN keytool -genkey -keyalg RSA -alias selfsigned -keystore /etc/kafka/kafka.jks -storepass password -keypass password -validity 360 -keysize 2048 -dname "CN=kafka,OU=foo,O=foo,L=bar,ST=bar,C=IT"
 
 # copy custom configuration files and scripts into place
 COPY config/supervisord.conf /etc/supervisord.conf
